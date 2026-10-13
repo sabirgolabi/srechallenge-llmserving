@@ -1,7 +1,6 @@
 # سرویس LLM روی Kubernetes (Ray Serve + vLLM روی CPU)
 
 مدل `Qwen/Qwen2.5-0.5B-Instruct` روی کلاستر kubeadm سه‌نودی با KubeRay، Ray Serve و vLLM (فقط CPU) راه اندازی شده است . مانیتورینگ با kube-prometheus-stack و لود تست با k6 است.
-راهنمای استفاده از مدل و محدودیت‌ها: [ai.md](ai.md)
 
 فقط دو ابزار لازم است: `kubectl` (که kustomize را دارد) و `helm`.
 
