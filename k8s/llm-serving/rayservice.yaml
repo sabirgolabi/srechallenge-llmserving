@@ -59,7 +59,7 @@ spec:
           spec:
             containers:
               - name: ray-worker
-                image: vllm-ray-cpu:0.1
+                image: vllm-ray-cpu:$version
                 imagePullPolicy: IfNotPresent
                 env:
                   - {name: PYTHONPATH, value: /app}
