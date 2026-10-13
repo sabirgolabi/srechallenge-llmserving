@@ -39,18 +39,6 @@ helm upgrade --install kps prometheus-community/kube-prometheus-stack \
   --version 92.3.0 -n monitoring -f helm/kps-values.yaml --timeout 10m
 ```
 
-**۲. ساخت ایمیج و رساندنش به نودها** (نودها رجیستری ندارند)
-
-```bash
-docker build --platform linux/amd64 -f docker/Dockerfile -t vllm-ray-cpu:0.1 docker/
-for n in node1 node2 node3; do
-  docker save vllm-ray-cpu:0.1 | ssh root@$n 'ctr -n k8s.io images import -'
-done
-```
-
-اگر PyPI در دسترس نیست، به دستور build این را اضافه کنید:
-`--build-arg PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple`
-
 **۳. استقرار (هر بار که چیزی عوض شد)**
 
 ```bash
