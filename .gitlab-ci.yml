@@ -1,6 +1,6 @@
 # The "k8s" tag must point to a runner that has kubectl access to the cluster
 # (e.g. the tools server). The kubeconfig stays on that runner.
-stages: [base, build, deploy, smoke]
+stages: [base, build, deploy, smoke, loadtest]
 
 default:
   tags: [k8s]
@@ -74,7 +74,7 @@ smoke:
 
 # Manual: run the k6 load test and keep its output as a job artifact.
 loadtest:
-  stage: smoke
+  stage: loadtest
   when: manual
   script:
     - JOB=$(kubectl create -f loadtest/job.yaml -o name)
