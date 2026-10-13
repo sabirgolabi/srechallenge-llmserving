@@ -1,6 +1,6 @@
 # The "k8s" tag must point to a runner that has kubectl access to the cluster
 # (e.g. the tools server). The kubeconfig stays on that runner.
-stages: [validate,build, deploy, smoke]
+stages: [validate, build, deploy, smoke]
 
 default:
   tags: [k8s]
