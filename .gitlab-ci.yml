@@ -1,6 +1,6 @@
 # The "k8s" tag must point to a runner that has kubectl access to the cluster
 # (e.g. the tools server). The kubeconfig stays on that runner.
-stages: [validate, deploy, smoke]
+stages: [validate,build, deploy, smoke]
 
 default:
   tags: [k8s]
@@ -13,6 +13,13 @@ validate:
     - kubectl apply -k k8s/ --dry-run=server
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+build:
+  stage: build
+  script:
+    - 	docker build --platform linux/amd64 -f docker/Dockerfile -t vllm-ray-cpu:$version docker
+    -   docker push 
+  rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
 deploy:
