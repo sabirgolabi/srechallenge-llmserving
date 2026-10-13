@@ -2,6 +2,7 @@
 
 مدل `Qwen/Qwen2.5-0.5B-Instruct` روی کلاستر kubeadm سه‌نودی با KubeRay، Ray Serve و vLLM (فقط CPU) راه اندازی شده است . مانیتورینگ با kube-prometheus-stack و لود تست با k6 است.
 
+راهنمای استفاده از مدل و محدودیت‌ها: [ai.md](ai.md)
 
 ## ساختار
 
