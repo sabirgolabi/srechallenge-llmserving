@@ -138,14 +138,3 @@ done
 
 kubeconfig فقط روی runner است و چیز محرمانه‌ای در مخزن نیست. ساخت ایمیج و helm در pipeline نیستند و دستی انجام می‌شوند.
 
-## عیب‌یابی
-
-- **پاد worker ساخته نمی‌شود:** `kubectl describe quota -n llm-serving`؛ احتمالاً ریکوئست بیشتر از سقف quota است.
-- **`ImagePullBackOff` در monitoring:** نودها به quay.io دسترسی ندارند. ایمیج‌ها را روی سیستم دیگر `docker pull` و `docker save` کنید و با `ctr images import` روی نودها بگذارید. فهرست ایمیج‌ها:
-  `kubectl get pods -n monitoring -o jsonpath='{..image}' | tr -s '[[:space:]]' '\n' | sort -u`
-- **تغییر کد اثر نکرد:** `APP_VERSION` را زیاد نکرده‌اید، یا هنوز فایل به پاد نرسیده بود. این را ببینید: `kubectl exec -n llm-serving <worker-pod> -- grep DTYPE /app/serve_app.py`
-
-## محدودیت‌ها
-
-- یک replica بدون HA. Prometheus و Grafana روی node2 قفل‌اند و خرابی آن نود یعنی از دست رفتن داده.
-- تست خودکار منطق کد وجود ندارد؛ فقط smoke test بعد از deploy.
