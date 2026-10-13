@@ -21,7 +21,7 @@ loadtest/              اسکریپت و Job لود تست k6
 
 ## راه‌اندازی از صفر
 
-**۱. فقط یک‌بار (کلاستر)**
+**1. فقط یک‌بار (کلاستر)**
 
 ```bash
 kubectl apply -k k8s/namespaces
@@ -39,12 +39,6 @@ helm upgrade --install kps prometheus-community/kube-prometheus-stack \
   --version 92.3.0 -n monitoring -f helm/kps-values.yaml --timeout 10m
 ```
 
-**۳. استقرار (هر بار که چیزی عوض شد)**
-
-```bash
-kubectl apply -k k8s/
-```
-
 بالا آمدن اولین بار چند دقیقه طول می‌کشد (دانلود مدل). وضعیت:
 
 ```bash
@@ -52,7 +46,7 @@ kubectl get pods -n llm-serving
 kubectl get rayservice -n llm-serving
 ```
 
-**۴. تست**
+**2. تست**
 
 ```bash
 HEAD=$(kubectl get pod -n llm-serving -l ray.io/node-type=head -o name | head -1)
