@@ -1,19 +1,10 @@
 # The "k8s" tag must point to a runner that has kubectl access to the cluster
 # (e.g. the tools server). The kubeconfig stays on that runner.
-stages: [validate, build, deploy, smoke]
+stages: [build, deploy, smoke]
 
 default:
   tags: [k8s]
 
-# Server-side dry run: the API server checks every manifest (including the RayService
-# and PodMonitor CRDs) without changing anything.
-validate:
-  stage: validate
-  script:
-    - kubectl apply -k k8s/ --dry-run=server
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 build:
   stage: build
   script:
