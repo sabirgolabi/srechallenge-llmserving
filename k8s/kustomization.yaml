@@ -1,0 +1,9 @@
+# One command deploys everything that is not a Helm chart:
+#   kubectl apply -k k8s/
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespaces
+  - llm-serving
+  - monitoring
+  - ../loadtest

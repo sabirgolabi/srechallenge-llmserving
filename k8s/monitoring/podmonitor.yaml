@@ -1,0 +1,19 @@
+# Scrapes the Ray metrics port (named "metrics", 8080, added by KubeRay) on every
+# Ray pod in llm-serving. Selecting by label (not by cluster name) keeps this working
+# when the RayService creates a new RayCluster.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ray
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames: [llm-serving]
+  selector:
+    matchExpressions:
+      - {key: ray.io/cluster, operator: Exists}
+  podTargetLabels: [ray.io/node-type, ray.io/cluster]
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s

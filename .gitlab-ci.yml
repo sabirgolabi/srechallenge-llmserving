@@ -1,0 +1,54 @@
+# The "k8s" tag must point to a runner that has kubectl access to the cluster
+# (e.g. the tools server). The kubeconfig stays on that runner.
+stages: [validate, deploy, smoke]
+
+default:
+  tags: [k8s]
+
+# Server-side dry run: the API server checks every manifest (including the RayService
+# and PodMonitor CRDs) without changing anything.
+validate:
+  stage: validate
+  script:
+    - kubectl apply -k k8s/ --dry-run=server
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+deploy:
+  stage: deploy
+  script:
+    - kubectl apply -k k8s/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# Retries for up to 20 minutes because the model needs a few minutes to start.
+smoke:
+  stage: smoke
+  script:
+    - |
+      HEAD=$(kubectl get pod -n llm-serving -l ray.io/node-type=head -o name | head -1)
+      for i in $(seq 1 60); do
+        if kubectl exec -n llm-serving "$HEAD" -- curl -sf -m 120 -X POST \
+             http://qwen-llm-serve-svc:8000/generate \
+             -H 'Content-Type: application/json' \
+             -d '{"prompt":"What is Kubernetes?","max_new_tokens":16}' | grep -q '"text"'; then
+          echo "smoke test passed"; exit 0
+        fi
+        echo "not ready yet ($i/60)"; sleep 20
+      done
+      echo "smoke test failed"; exit 1
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+
+# Manual: run the k6 load test and keep its output as a job artifact.
+loadtest:
+  stage: smoke
+  when: manual
+  script:
+    - JOB=$(kubectl create -f loadtest/job.yaml -o name)
+    - kubectl wait --for=condition=complete "$JOB" -n monitoring --timeout=30m
+    - kubectl logs -n monitoring "$JOB" | tee k6-result.txt
+  artifacts:
+    paths: [k6-result.txt]
+    expire_in: 30 days

@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+resources:
+  - podmonitor.yaml
+
+# Ray's own Grafana dashboards (optional). Export the JSON files first (see README),
+# then uncomment the lines below.
+# generatorOptions:
+#   disableNameSuffixHash: true
+#   labels:
+#     grafana_dashboard: "1"
+# configMapGenerator:
+#   - name: ray-serve-dashboard
+#     files: [serve_grafana_dashboard.json]
+#   - name: ray-serve-deployment-dashboard
+#     files: [serve_deployment_grafana_dashboard.json]
+#   - name: ray-default-dashboard
+#     files: [default_grafana_dashboard.json]

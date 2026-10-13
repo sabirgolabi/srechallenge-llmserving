@@ -1,0 +1,90 @@
+# Values for prometheus-community/kube-prometheus-stack (pinned in the Makefile).
+alertmanager:
+  enabled: false
+
+# kubeadm binds these control-plane components to 127.0.0.1, so they cannot be scraped
+# by default. Enable them after changing their static pod manifests (see README).
+kubeEtcd: {enabled: false}
+kubeScheduler: {enabled: false}
+kubeControllerManager: {enabled: false}
+kubeProxy: {enabled: false}
+
+defaultRules:
+  rules:
+    alertmanager: false
+    etcd: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeControllerManager: false
+    kubeProxy: false
+
+prometheusOperator:
+  admissionWebhooks: {enabled: false}
+  tls: {enabled: false}
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 200m, memory: 128Mi}
+  prometheusConfigReloader:
+    resources:
+      requests: {cpu: 10m, memory: 32Mi}
+      limits: {cpu: 50m, memory: 64Mi}
+
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 30900
+  prometheusSpec:
+    retention: 4d
+    retentionSize: 2GB
+    nodeSelector:
+      kubernetes.io/hostname: node2
+    # Pick up PodMonitors/ServiceMonitors/rules from any namespace without a "release" label.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    resources:
+      requests: {cpu: 200m, memory: 512Mi}
+      limits: {cpu: "1", memory: 1536Mi}
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 8Gi
+
+grafana:
+  enabled: true
+  nodeSelector:
+    kubernetes.io/hostname: node2
+  service:
+    type: NodePort
+    nodePort: 30300
+  deploymentStrategy:
+    type: Recreate
+  initChownData:
+    enabled: false
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: local-path
+    size: 1Gi
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: 500m, memory: 768Mi}
+  sidecar:
+    resources:
+      requests: {cpu: 20m, memory: 64Mi}
+      limits: {cpu: 100m, memory: 128Mi}
+
+kube-state-metrics:
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 200m, memory: 128Mi}
+
+prometheus-node-exporter:
+  resources:
+    requests: {cpu: 20m, memory: 32Mi}
+    limits: {cpu: 100m, memory: 64Mi}

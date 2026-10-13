@@ -1,0 +1,78 @@
+apiVersion: ray.io/v1
+kind: RayService
+metadata:
+  name: qwen-llm
+spec:
+  serviceUnhealthySecondThreshold: 1800
+  deploymentUnhealthySecondThreshold: 1800
+  excludeHeadPodFromServeSvc: true
+  serveConfigV2: |
+    applications:
+      - name: llm
+        route_prefix: /
+        import_path: serve_app:app
+        runtime_env:
+          env_vars:
+            DTYPE: "auto"
+            # Bump this number after changing app/serve_app.py: Serve then restarts the
+            # model replica in place and loads the new code.
+            APP_VERSION: "1"
+  rayClusterConfig:
+    rayVersion: "2.59.0"
+    headGroupSpec:
+      rayStartParams:
+        dashboard-host: "0.0.0.0"
+        num-cpus: "0"   # the head only manages the cluster; the model runs on the worker
+      template:
+        spec:
+          containers:
+            - name: ray-head
+              image: vllm-ray-cpu:0.1   # change the tag in both places (head and worker)
+              imagePullPolicy: IfNotPresent
+              env:
+                - {name: PYTHONPATH, value: /app}
+                - {name: HF_HOME, value: /tmp/hf}
+              ports:
+                - {containerPort: 6379, name: gcs-server}
+                - {containerPort: 8265, name: dashboard}
+                - {containerPort: 10001, name: client}
+                - {containerPort: 8000, name: serve}
+              resources:
+                requests: {cpu: 500m, memory: 1Gi}
+                limits: {cpu: "1", memory: 2Gi}
+              volumeMounts:
+                - {name: app-code, mountPath: /app}
+                - {name: dshm, mountPath: /dev/shm}
+          volumes:
+            - name: app-code
+              configMap: {name: serve-app}
+            - name: dshm
+              emptyDir: {medium: Memory, sizeLimit: 512Mi}
+    workerGroupSpecs:
+      - groupName: cpu-workers
+        replicas: 1
+        minReplicas: 1
+        maxReplicas: 1
+        rayStartParams:
+          object-store-memory: "268435456"
+        template:
+          spec:
+            containers:
+              - name: ray-worker
+                image: vllm-ray-cpu:0.1
+                imagePullPolicy: IfNotPresent
+                env:
+                  - {name: PYTHONPATH, value: /app}
+                  - {name: HF_HOME, value: /tmp/hf}
+                  - {name: VLLM_CPU_KVCACHE_SPACE, value: "1"}
+                resources:
+                  requests: {cpu: "2", memory: 4Gi}
+                  limits: {cpu: "3", memory: 6Gi}
+                volumeMounts:
+                  - {name: app-code, mountPath: /app}
+                  - {name: dshm, mountPath: /dev/shm}
+            volumes:
+              - name: app-code
+                configMap: {name: serve-app}
+              - name: dshm
+                emptyDir: {medium: Memory, sizeLimit: 1Gi}

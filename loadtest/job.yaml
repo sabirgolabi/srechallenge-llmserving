@@ -1,0 +1,29 @@
+# Not part of the kustomization: every run creates a new Job.
+#   kubectl create -f loadtest/job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: k6-
+  namespace: monitoring
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 86400
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        kubernetes.io/hostname: node1   # keep k6 away from the node that runs the model
+      containers:
+        - name: k6
+          image: grafana/k6:1.0.0
+          args: ["run", "/scripts/loadtest.js"]
+          env:
+            - {name: MAX_NEW_TOKENS, value: "32"}
+          resources:
+            requests: {cpu: 250m, memory: 256Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          volumeMounts:
+            - {name: script, mountPath: /scripts}
+      volumes:
+        - name: script
+          configMap: {name: k6-script}

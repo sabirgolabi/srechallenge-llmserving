@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: llm-serving
+resources:
+  - ../../app          # ConfigMap with serve_app.py
+  - rayservice.yaml
+  - services.yaml
